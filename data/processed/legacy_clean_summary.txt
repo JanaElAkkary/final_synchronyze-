@@ -1,0 +1,18 @@
+Raw rows: 100170
+After empty removal: 100165
+After label filter: 100165
+After short-text filter: 98447
+After clean_text dedup: 97912
+After text dedup / final rows: 97912
+
+Label counts:
+label
+Society & Health         44263
+Politics & Governance    41127
+Economy & Business        7992
+Technology & Cyber        4530
+
+Source counts:
+source_dataset
+huffpost    95795
+bbc          2117

@@ -1,0 +1,12 @@
+Total raw rows: 2973371
+English rows: 2128963
+After unusable-text removal: 2042084
+After deduplication: 1539932
+Final candidate rows: 16496
+
+Label counts:
+provisional_label
+Politics & Governance    7576
+Society & Health         6439
+Economy & Business       2232
+Technology & Cyber        249

@@ -1,0 +1,2 @@
+week_prev,week_curr,actors,group_size,avg_pair_similarity,avg_drift,group_id,evidence
+2025-04,2025-05,"actor_1,actor_3,actor_2",3,0.9509608567535167,0.28282249176029817,G1,All shifted from Politics & Governance to Economy & Business in week 5

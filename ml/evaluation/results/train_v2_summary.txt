@@ -1,0 +1,25 @@
+Input rows: 32608
+Train rows: 26086
+Validation rows: 6522
+Accuracy: 0.8431
+Macro F1: 0.8315
+
+Label counts:
+label
+Politics & Governance    10000
+Society & Health         10000
+Economy & Business        8000
+Technology & Cyber        4608
+
+Validation classification report:
+                       precision    recall  f1-score   support
+
+   Economy & Business     0.8219    0.8131    0.8175      1600
+Politics & Governance     0.8749    0.8670    0.8709      2000
+     Society & Health     0.8266    0.9060    0.8645      2000
+   Technology & Cyber     0.8523    0.7072    0.7730       922
+
+             accuracy                         0.8431      6522
+            macro avg     0.8439    0.8233    0.8315      6522
+         weighted avg     0.8439    0.8431    0.8420      6522
+

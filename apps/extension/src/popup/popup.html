@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synchronyze Tasks</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>Synchronyze</h1>
+        <div class="subtitle">Task Runner</div>
+    </div>
+
+    <div class="container">
+        <!-- Status Card -->
+        <div class="card compact">
+            <div class="status-line">
+                <span id="backendStatusBadge" class="badge">OFFLINE</span>
+                <span class="status-text" id="lastEvent">—</span>
+            </div>
+            <div class="row" style="margin-top:6px;">
+                <span class="label">Deep Scan</span>
+                <span class="value" id="deepScanStatus">—</span>
+            </div>
+            <div class="row" id="deepScanHintRow" style="display:none;">
+                <span class="label"></span>
+                <span class="value" id="deepScanHint" style="color: var(--text-muted);">—</span>
+            </div>
+        </div>
+
+        <!-- Active Task Card -->
+        <div class="card compact">
+            <div class="card-title">Active Task</div>
+            <div id="activeTaskContent">
+                <div class="no-task">No active task</div>
+            </div>
+            <div id="activeTaskDebug" class="debug-box" style="display:none;"></div>
+            <span id="taskStatusBadge" class="badge" style="display:none;"></span>
+        </div>
+
+        <!-- Last Capture Card -->
+        <div class="card compact">
+            <div class="card-title">Last Capture</div>
+            <div class="stats-4">
+                <div class="stat">
+                    <div class="stat-k">Attempted</div>
+                    <div class="stat-v" id="capAttempted">—</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-k">Saved</div>
+                    <div class="stat-v" id="capSaved">—</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-k">Duplicate</div>
+                    <div class="stat-v" id="capDuplicate">—</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-k">Failed</div>
+                    <div class="stat-v" id="capFailed">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions compact-actions">
+            <div class="btn-grid">
+                <button id="btnPoll" class="btn primary">Poll Now</button>
+                <button id="btnStartResume" class="btn navy" disabled>Start/Resume</button>
+                <button id="btnReloadTab" class="btn" disabled>Deep Scan</button>
+                <button id="btnClear" class="btn danger" disabled>Clear Task</button>
+            </div>
+                <button id="btnStopDeepScan" class="btn warning" disabled>Stop Deep Scan</button>
+            <button id="btnToggleAdvanced" class="btn link">Advanced</button>
+        </div>
+
+        <div id="advancedSection" class="card advanced" style="display:none;">
+            <div class="card-title">Advanced</div>
+
+            <div class="row" style="gap:8px;">
+                <input type="text" id="apiBaseInput" value="http://127.0.0.1:8001">
+                <button id="btnSaveApi" class="btn">Save</button>
+            </div>
+
+            <div class="row">
+                <span class="label">Last Poll:</span>
+                <span class="value" id="lastPoll">—</span>
+            </div>
+
+            <div class="row">
+                <span class="label">Task Claim:</span>
+                <span class="value" id="taskClaimStatus">—</span>
+            </div>
+
+            <div class="row">
+                <span class="label">Capture:</span>
+                <span class="value" id="captureStatus">—</span>
+            </div>
+
+            <div class="row">
+                <span class="label">Last Error:</span>
+                <span class="value" id="lastError">None</span>
+            </div>
+
+            <div class="row">
+                <span class="label">Capture Debug:</span>
+                <span class="value" id="lastScrapeSummary">—</span>
+            </div>
+            <div id="lastScrapeDebug" class="debug-box">—</div>
+
+            <div class="card-subtitle">Extra Actions</div>
+            <div class="btn-grid" style="margin-top:8px;">
+                <button id="btnOpen" class="btn" disabled>Focus Tab</button>
+                <button id="btnCompleteNext" class="btn success" disabled>Complete & Next</button>
+                <button id="btnFailNext" class="btn warning" disabled>Fail & Next</button>
+                <div></div>
+            </div>
+
+            <div class="card-subtitle" style="margin-top:10px;">Interceptor</div>
+            <div class="row">
+                <span class="label">Total:</span>
+                <span class="value" id="interceptCount">0</span>
+            </div>
+            <div class="row">
+                <span class="label">Last Platform:</span>
+                <span class="value" id="interceptPlatform">—</span>
+            </div>
+            <div class="row">
+                <span class="label">Last URL:</span>
+                <span class="value" id="interceptUrl" title="">—</span>
+            </div>
+            <div class="row">
+                <span class="label">Last Time:</span>
+                <span class="value" id="interceptAt">—</span>
+            </div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>

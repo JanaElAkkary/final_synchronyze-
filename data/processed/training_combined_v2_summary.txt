@@ -1,0 +1,18 @@
+Legacy rows used: 97912
+IRA rows used: 294
+Combined before dedup: 98206
+After clean_text dedup: 98205
+After text dedup / final rows: 98205
+
+Label counts:
+label
+Society & Health         44332
+Politics & Governance    41197
+Economy & Business        8068
+Technology & Cyber        4608
+
+Source counts:
+source_dataset
+huffpost    95795
+bbc          2117
+ira           293

@@ -1,0 +1,37 @@
+Total raw rows: 2973371
+English rows: 2128963
+After unusable-text removal: 2117434
+After deduplication: 1591067
+
+Top account_type counts:
+account_type
+Right         487875
+local         434666
+left          300203
+news          129664
+Commercial    110124
+Hashtager     102785
+Russian        10999
+Koch            5199
+?               3603
+German          2311
+Italian         1744
+Arabic          1017
+nan              316
+right            298
+ZAPOROSHIA       140
+Ebola             63
+French            54
+Spanish            4
+Portuguese         2
+
+Top account_category counts:
+account_category
+NewsFeed        564330
+RightTroll      488173
+LeftTroll       300203
+Commercial      110124
+HashtagGamer    102785
+NonEnglish       16131
+Fearmonger        5402
+Unknown           3919

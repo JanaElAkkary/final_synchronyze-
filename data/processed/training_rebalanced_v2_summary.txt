@@ -1,0 +1,21 @@
+Input rows: 98205
+Output rows: 32608
+
+Target counts:
+Politics & Governance: 10000
+Society & Health: 10000
+Economy & Business: 8000
+Technology & Cyber: 4608
+
+Actual label counts:
+label
+Politics & Governance    10000
+Society & Health         10000
+Economy & Business        8000
+Technology & Cyber        4608
+
+Source counts:
+source_dataset
+huffpost    31261
+bbc          1160
+ira           187

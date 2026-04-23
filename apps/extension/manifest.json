@@ -1,0 +1,68 @@
+{
+  "manifest_version": 3,
+  "name": "Synchronyze Extension",
+  "version": "1.0",
+  "permissions": [
+    "storage",
+    "alarms",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:8001/*",
+    "http://127.0.0.1:8001/*",
+    "https://x.com/*",
+    "https://www.instagram.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://www.instagram.com/*"
+      ],
+      "js": ["src/content/scrape_visible_posts.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*",
+        "https://www.instagram.com/*",
+        "https://www.facebook.com/*"
+      ],
+      "js": ["src/content-scripts/interceptor.js"],
+      "run_at": "document_start",
+      "world": "ISOLATED"
+    },
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://twitter.com/*",
+        "https://www.instagram.com/*"
+      ],
+      "js": ["src/content-scripts/scroller.js"],
+      "run_at": "document_idle",
+      "world": "ISOLATED"
+    }
+  ],
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "action": {
+    "default_title": "Check Tasks",
+    "default_popup": "src/popup/popup.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content-scripts/injected_fetch.js"
+      ],
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://x.com/*",
+        "https://twitter.com/*",
+        "https://www.facebook.com/*"
+      ]
+    }
+  ]
+}

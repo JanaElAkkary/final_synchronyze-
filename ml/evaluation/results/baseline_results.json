@@ -1,0 +1,74 @@
+{
+  "rows": 240,
+  "average_top_probability": 0.7060172625,
+  "macro_f1": 0.6499057983870975,
+  "total_accuracy": 0.675,
+  "labels": [
+    "Politics & Governance",
+    "Technology & Cyber",
+    "Society & Health",
+    "Economy & Business"
+  ],
+  "per_class": {
+    "Politics & Governance": {
+      "precision": 0.7469879518072289,
+      "recall": 0.8985507246376812,
+      "f1": 0.8157894736842105,
+      "support": 69
+    },
+    "Technology & Cyber": {
+      "precision": 0.6451612903225806,
+      "recall": 0.38461538461538464,
+      "f1": 0.4819277108433735,
+      "support": 52
+    },
+    "Society & Health": {
+      "precision": 0.5473684210526316,
+      "recall": 0.8253968253968254,
+      "f1": 0.6582278481012658,
+      "support": 63
+    },
+    "Economy & Business": {
+      "precision": 0.9032258064516129,
+      "recall": 0.5,
+      "f1": 0.6436781609195402,
+      "support": 56
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "Politics & Governance",
+      "Technology & Cyber",
+      "Society & Health",
+      "Economy & Business"
+    ],
+    "matrix": [
+      [
+        62,
+        1,
+        5,
+        1
+      ],
+      [
+        4,
+        20,
+        26,
+        2
+      ],
+      [
+        9,
+        2,
+        52,
+        0
+      ],
+      [
+        8,
+        8,
+        12,
+        28
+      ]
+    ]
+  },
+  "wrong_predictions_count": 78,
+  "top_50_wrong_predictions_file": ".\\ml\\evaluation\\results\\top_50_wrong_predictions.csv"
+}
