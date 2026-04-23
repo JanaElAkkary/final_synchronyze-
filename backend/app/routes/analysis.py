@@ -13,6 +13,214 @@ from packages.shared_contracts.analysis_contract import LABEL_ORDER
 router = APIRouter()
 
 
+def _compute_account_drift_points(
+    db: Session,
+    account_id: int,
+    model_version: str = "tfidf_lr_v1",
+    weeks: int = 12,
+):
+    rows = (
+        db.query(Post, PostAnalysis)
+        .join(PostAnalysis, Post.id == PostAnalysis.post_id)
+        .filter(Post.account_id == account_id)
+        .filter(PostAnalysis.model_version == model_version)
+        .all()
+    )
+
+    weekly = {}
+
+    for post, analysis in rows:
+        vector = analysis.topic_vector
+        if vector is None:
+            continue
+        if not isinstance(vector, list):
+            continue
+        if len(vector) == 0:
+            continue
+
+        dt = post.published_at
+        if dt is None:
+            dt = post.captured_at
+        if dt is None:
+            dt = post.created_at
+        if dt is None:
+            continue
+
+        date_value = dt.date()
+        week_start_date = date_value - timedelta(days=date_value.weekday())
+        week_key = week_start_date.isoformat()
+
+        if week_key not in weekly:
+            sums = []
+            index = 0
+            while index < len(vector):
+                sums.append(0.0)
+                index = index + 1
+            weekly[week_key] = {"sum": sums, "count": 0}
+
+        info = weekly[week_key]
+        sums = info["sum"]
+
+        index = 0
+        while index < len(vector):
+            try:
+                value = float(vector[index])
+            except Exception:
+                value = 0.0
+            sums[index] = sums[index] + value
+            index = index + 1
+
+        info["count"] = info["count"] + 1
+
+    week_keys = list(weekly.keys())
+    week_keys.sort()
+
+    if len(week_keys) < 2:
+        return []
+
+    if weeks is None or weeks <= 0:
+        weeks = 12
+
+    if len(week_keys) > weeks:
+        week_keys = week_keys[len(week_keys) - weeks :]
+
+    avg_weeks = []
+
+    for key in week_keys:
+        info = weekly[key]
+        count = info["count"]
+        if count == 0:
+            continue
+
+        sums = info["sum"]
+        avg_vector = []
+
+        index = 0
+        while index < len(sums):
+            avg_value = sums[index] / float(count)
+            avg_vector.append(avg_value)
+            index = index + 1
+
+        avg_weeks.append({"week_start": key, "vector": avg_vector})
+
+    if len(avg_weeks) < 2:
+        return []
+
+    drift_points = []
+
+    index = 1
+    while index < len(avg_weeks):
+        prev = avg_weeks[index - 1]
+        curr = avg_weeks[index]
+
+        a = prev["vector"]
+        b = curr["vector"]
+
+        length = len(a)
+        if len(b) < length:
+            length = len(b)
+
+        dot = 0.0
+        norm_a = 0.0
+        norm_b = 0.0
+
+        i = 0
+        while i < length:
+            va = float(a[i])
+            vb = float(b[i])
+            dot = dot + va * vb
+            norm_a = norm_a + va * va
+            norm_b = norm_b + vb * vb
+            i = i + 1
+
+        if norm_a <= 0.0 or norm_b <= 0.0:
+            sim = 0.0
+        else:
+            sim = dot / (sqrt(norm_a) * sqrt(norm_b))
+
+        drift_points.append(
+            {"week_start": curr["week_start"], "drift": 1.0 - sim}
+        )
+
+        index = index + 1
+
+    return drift_points
+
+
+def _maybe_create_drift_alert_for_account(
+    db: Session,
+    account_id: int,
+    model_version: str = "tfidf_lr_v1",
+    weeks: int = 12,
+    drift_threshold: float = 0.25,
+):
+    drift_points = _compute_account_drift_points(
+        db=db,
+        account_id=account_id,
+        model_version=model_version,
+        weeks=weeks,
+    )
+
+    if len(drift_points) == 0:
+        return False
+
+    max_point = None
+    for point in drift_points:
+        if max_point is None or point["drift"] > max_point["drift"]:
+            max_point = point
+
+    if max_point is None:
+        return False
+
+    max_drift_value = float(max_point["drift"])
+    if max_drift_value < drift_threshold:
+        return False
+
+    week_start_str = max_point["week_start"]
+
+    existing_alerts = (
+        db.query(Alert)
+        .filter(Alert.alert_type == "drift")
+        .filter(Alert.account_id == account_id)
+        .all()
+    )
+
+    for alert in existing_alerts:
+        payload = alert.payload
+        if payload is None or not isinstance(payload, dict):
+            continue
+        if payload.get("week_start") == week_start_str:
+            return False
+
+    if max_drift_value >= drift_threshold * 1.5:
+        severity = "high"
+    else:
+        severity = "medium"
+
+    message = (
+        "Drift spike detected: drift="
+        + str(max_drift_value)
+        + " on week "
+        + str(week_start_str)
+    )
+
+    alert_row = Alert(
+        alert_type="drift",
+        severity=severity,
+        account_id=account_id,
+        coordinated_group_id=None,
+        message=message,
+        payload={
+            "week_start": week_start_str,
+            "drift": max_drift_value,
+        },
+        is_read=False,
+    )
+
+    db.add(alert_row)
+    return True
+
+
 @router.post("/analyze")
 def analyze(body: dict, db: Session = Depends(get_db)):
     post_id = body.get("post_id")
@@ -109,6 +317,18 @@ def analyze(body: dict, db: Session = Depends(get_db)):
                 detail="failed to save analysis",
             )
 
+        try:
+            if post.account_id is not None:
+                created_alert = _maybe_create_drift_alert_for_account(
+                    db=db,
+                    account_id=post.account_id,
+                    model_version=result_model_version,
+                )
+                if created_alert:
+                    db.commit()
+        except Exception:
+            db.rollback()
+
         return {
             "status": "ok",
             "stored": True,
@@ -165,6 +385,7 @@ def batch_analyze(body: dict, db: Session = Depends(get_db)):
     reused_existing = 0
     errors = 0
     results = []
+    affected_account_ids = set()
 
     model_version = "tfidf_lr_v1"
 
@@ -237,6 +458,8 @@ def batch_analyze(body: dict, db: Session = Depends(get_db)):
             db.commit()
 
             stored_new = stored_new + 1
+            if post.account_id is not None:
+                affected_account_ids.add(post.account_id)
 
             results.append(
                 {
@@ -257,6 +480,18 @@ def batch_analyze(body: dict, db: Session = Depends(get_db)):
             results.append(
                 {"post_id": post_id, "error": "internal error"}
             )
+
+    for account_id in affected_account_ids:
+        try:
+            created_alert = _maybe_create_drift_alert_for_account(
+                db=db,
+                account_id=account_id,
+                model_version=model_version,
+            )
+            if created_alert:
+                db.commit()
+        except Exception:
+            db.rollback()
 
     return {
         "status": "ok",

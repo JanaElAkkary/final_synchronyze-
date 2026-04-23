@@ -428,7 +428,21 @@ async function claimNextTask() {
         chrome.storage.local.set({ last_api_success: new Date().toISOString() });
         clearTaskError();
 
-        return tasks.length > 0 ? tasks[0] : null;
+        if (tasks.length === 0) return null;
+
+        const nextTask = tasks[0];
+        const claimed = await patchStatus(nextTask.id, 'in_progress', {
+            step: 'claim',
+            reason: 'extension_claim',
+            claimed_at: new Date().toISOString()
+        });
+
+        if (!claimed) {
+            setTaskError(`Claim Error: failed to promote task ${nextTask.id} to in_progress`);
+            return null;
+        }
+
+        return nextTask;
     } catch (e) {
         setTaskError(`Claim Error: ${e.message || 'failed'}`);
         return null;
